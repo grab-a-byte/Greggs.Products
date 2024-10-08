@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Local Greggs",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

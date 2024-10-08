@@ -7,30 +7,20 @@ namespace Greggs.Products.Api.DataAccess;
 /// <summary>
 /// DISCLAIMER: This is only here to help enable the purpose of this exercise, this doesn't reflect the way we work!
 /// </summary>
-public class ProductAccess : IDataAccess<Product>
+public sealed class ProductAccess : IDataAccess<Product>
 {
-    private static readonly IEnumerable<Product> ProductDatabase = new List<Product>()
-    {
-        new() { Name = "Sausage Roll", PriceInPounds = 1m },
-        new() { Name = "Vegan Sausage Roll", PriceInPounds = 1.1m },
-        new() { Name = "Steak Bake", PriceInPounds = 1.2m },
-        new() { Name = "Yum Yum", PriceInPounds = 0.7m },
-        new() { Name = "Pink Jammie", PriceInPounds = 0.5m },
-        new() { Name = "Mexican Baguette", PriceInPounds = 2.1m },
-        new() { Name = "Bacon Sandwich", PriceInPounds = 1.95m },
-        new() { Name = "Coca Cola", PriceInPounds = 1.2m }
-    };
+    private static readonly Product[] ProductDatabase = 
+    [
+        new() { Name = "Sausage Roll", PriceInPounds = 1.45m },
+        new() { Name = "Vegan Sausage Roll", PriceInPounds = 1.45m },
+        new() { Name = "Steak Bake", PriceInPounds = 2.40m },
+        new() { Name = "Yum Yum", PriceInPounds = 0.9m },
+        new() { Name = "Pink Jammie", PriceInPounds = 1.5m },
+        new() { Name = "Mexican Baguette", PriceInPounds = 4.0m },
+        new() { Name = "Bacon Sandwich", PriceInPounds = 2.90m },
+        new() { Name = "Coca Cola", PriceInPounds = 2.2m }
+    ];
 
     public IEnumerable<Product> List(int? pageStart, int? pageSize)
-    {
-        var queryable = ProductDatabase.AsQueryable();
-
-        if (pageStart.HasValue)
-            queryable = queryable.Skip(pageStart.Value);
-
-        if (pageSize.HasValue)
-            queryable = queryable.Take(pageSize.Value);
-
-        return queryable.ToList();
-    }
+        => ProductDatabase.Skip(pageStart ?? 0).Take(pageSize ?? 5);
 }

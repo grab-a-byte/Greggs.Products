@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Greggs.Products.Api.DataAccess;
+using Greggs.Products.Api.Dto;
 using Greggs.Products.Api.Models;
+using Greggs.Products.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -9,32 +12,26 @@ namespace Greggs.Products.Api.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ProductController : ControllerBase
+public sealed class ProductController(
+    IDataAccess<Product> productRepository,
+    ICurrencyConversionService currencyConversionService,
+    ILogger<ProductController> logger) : ControllerBase
 {
-    private static readonly string[] Products = new[]
-    {
-        "Sausage Roll", "Vegan Sausage Roll", "Steak Bake", "Yum Yum", "Pink Jammie"
-    };
-
-    private readonly ILogger<ProductController> _logger;
-
-    public ProductController(ILogger<ProductController> logger)
-    {
-        _logger = logger;
-    }
-
     [HttpGet]
-    public IEnumerable<Product> Get(int pageStart = 0, int pageSize = 5)
+    public IEnumerable<ProductDto> Get(int pageStart = 0, int pageSize = 5, string? currencyCode = null)
     {
-        if (pageSize > Products.Length)
-            pageSize = Products.Length;
+        logger.LogInformation("Call to {endpoint} started at {time} for currencyCode {currencyCode}", "Get Products", DateTime.Now, currencyCode);
 
-        var rng = new Random();
-        return Enumerable.Range(1, pageSize).Select(index => new Product
-            {
-                PriceInPounds = rng.Next(0, 10),
-                Name = Products[rng.Next(Products.Length)]
-            })
-            .ToArray();
+        var products = productRepository.List(pageStart, pageSize).ToArray();
+        if (currencyCode is null or "GBP")
+        {
+            return products.Select(p => new ProductDto(p.Name, p.PriceInPounds));
+        }
+
+        return products.Select(x =>
+        {
+            var convertedPrice = currencyConversionService.ConvertCurrency(x.PriceInPounds, currencyCode);
+            return new ProductDto(x.Name, convertedPrice);
+        });
     }
 }
